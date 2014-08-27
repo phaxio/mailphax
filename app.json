@@ -1,0 +1,23 @@
+{
+  "name": "Mailphax",
+  "description": "Send faxes with Phaxio using 3rd party email services.",
+  "keywords": [
+    "fax",
+    "email",
+    "phaxio",
+    "mandrill",
+    "mailgun",
+    "sendgrid"
+  ],
+  "addons": [],
+  "env": {
+    "PHAXIO_KEY": {
+      "description": "Your Phaxio API Key"
+    },
+    "PHAXIO_SECRET": {
+      "description": "Your Phaxio API Secret"
+    }
+  },
+  "repository" : "https://github.com/phaxio/mailphax",
+  "logo" : "https://avatars3.githubusercontent.com/u/929026?v=2&s=200"
+}
