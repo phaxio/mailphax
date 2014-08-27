@@ -7,10 +7,12 @@ Send faxes with Phaxio using 3rd party email services.  Mailphax is a simple sin
 Installation on Heroku
 ------------
 
-Use the deploy button:
+**Use the deploy button**
+
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
-Or do it yourself:
+**Or do it yourself**
+
 (This assumes you have the Heroku toolbelt installed and have a Heroku account.)
 
 1. git clone this repo && cd mailphax
