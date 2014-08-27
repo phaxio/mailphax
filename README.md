@@ -54,3 +54,12 @@ Configuring SendGrid
 -------
 TODO
 
+
+TODOs
+-----
+
+ - Support SendGrid
+ - Reply to user with confirmation of fax success/failure
+ - Reply to user if fax submission failed (e.g. bad number, no attachment)
+ - Allow filtering inbound emails by regexes
+ 
