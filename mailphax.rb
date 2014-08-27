@@ -13,11 +13,11 @@ end
 
 
 get '/mandrill' do
-  [400, "Mandrill supported, but callbacks must be POSTs"]
+  [501, "mandrill not implemented yet"]
 end
 
 post '/mandrill' do
-  "OK"
+  [501, "mandrill not implemented yet"]
 end
 
 get '/mailgun' do
@@ -51,8 +51,8 @@ post '/mailgun' do
     i += 1
   end
 
-  "hurray"
   sendFax(params['sender'], params['recipient'],files)
+  "OK"
 end
 
 get '/sendgrid' do
