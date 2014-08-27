@@ -16,6 +16,30 @@
     },
     "PHAXIO_SECRET": {
       "description": "Your Phaxio API Secret"
+    },
+    "SMTP_HOST": {
+      "description": "SMTP host for outgoing email (for failure alerts)",
+      "required": false
+    },
+    "SMTP_USER": {
+      "description": "SMTP username for outgoing email (for failure alerts)",
+      "required": false
+    },
+    "SMTP_PASSWORD": {
+      "description": "SMTP password for outgoing email (for failure alerts)",
+      "required": false
+    },
+    "SMTP_PORT": {
+      "description": "SMTP port for outgoing email (for failure alerts)",
+      "required": false
+    },
+    "SMTP_TLS": {
+      "description": "Should use TLS on outgoing email? (true or blank)",
+      "required": false
+    },
+    "SMTP_FROM": {
+      "description": "The From address for any outgoing email from mailphax.",
+      "required": false
     }
   },
   "repository" : "https://github.com/phaxio/mailphax",

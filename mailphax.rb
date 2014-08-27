@@ -30,8 +30,6 @@ post '/mailgun' do
     return [400, "Must include a sender"]
   elsif not params['recipient']
     return [400, "Must include a recipient"]
-  elsif not params['attachment-count']
-    return [400, "Must include an attachment to send"]
   end
 
   files = []
@@ -67,7 +65,7 @@ def sendFax(fromEmail, toEmail, filenames)
 
   number = Mail::Address.new(toEmail).local
 
-  options = {to: number}
+  options = {to: number, callback_url: "mailto:#{fromEmail}" }
 
   filenames.each_index do |idx|
     options["filename[#{idx}]"] = File.new(filenames[idx])
@@ -81,5 +79,25 @@ def sendFax(fromEmail, toEmail, filenames)
     logger.info "Fax queued up successfully: ID #" + result['data']['faxId'].to_s
   else
     logger.warn "Problem submitting fax: " + result['message']
+
+    if ENV['SMTP_HOST']
+      #send mail back to the user telling them there was a problem
+
+      Pony.mail(
+        :to => fromEmail,
+        :from => (ENV['SMTP_FROM'] || 'mailphax@example.com'),
+        :subject => 'Mailfax: There was a problem sending your fax',
+        :body => "There was a problem faxing your #{filenames.length} files to #{number}: " + result['message'],
+        :via => :smtp,
+        :via_options => {
+          :address                => ENV['SMTP_HOST'],
+          :port                   => (ENV['SMTP_PORT'] || 25),
+          :enable_starttls_auto   => ENV['SMTP_TLS'],
+          :user_name              => ENV['SMTP_USER'],
+          :password               => ENV['SMTP_PASSWORD'],
+          :authentication         => :login
+        }
+      )
+    end
   end
 end
