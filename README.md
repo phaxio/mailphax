@@ -27,7 +27,7 @@ Configuring Mailgun
 -------
 1. Sign up for a mailgun account
 1. In the Mailgun console, click "Domains" in the navbar.
-1. Add a new inbound domain that you have DNS control over.  (Or use something.mailgun.org and you can use a mailgun subdomain!)
+1. Add a new inbound domain that you have DNS control over.  (Or use something.mailgun.org and you can use a mailgun subdomain!  If you use a mailgun subdomain, you can skip the next step as DNS is set up by mailgun already.)
 1. Modify the DNS on your inbound domain to point to Mailgun using MX records.
 1. Click "Routes" in the main Mailgun Navbar.
 1. Click "Create new route"
