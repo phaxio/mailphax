@@ -52,41 +52,41 @@ post '/mailgun' do
 
   sender = params['sender']
   if not sender
-    return response(400, "Must include a sender", logger)
+    return logAndResponse(400, "Must include a sender", logger)
   end
 
   senderWhitelist = getSenderWhitelist()
   if not senderWhitelist.nil? and not senderWhitelist.include? sender
-    return response(401, "sender blocked", logger)
+    return logAndResponse(401, "sender blocked", logger)
   end
 
   recipient = params['recipient']
   if not recipient
-    return response(400, "Must include a recipient", logger)
+    return logAndResponse(400, "Must include a recipient", logger)
   end
 
   recipientWhitelist = getRecipientWhitelist()
   if not recipientWhitelist.nil? and not recipientWhitelist.include? recipient
-    return response(401, "recipient blocked", logger)
+    return logAndResponse(401, "recipient blocked", logger)
   end
 
   token = params['token']
   if not token
-    return response(400, "Must include a token", logger)
+    return logAndResponse(400, "Must include a token", logger)
   end
 
   signature = params['signature']
   if not signature
-    return response(400, "Must include a signature", logger)
+    return logAndResponse(400, "Must include a signature", logger)
   end
 
   timestamp = params['timestamp']
   if not timestamp
-    return response(400, "Must include a timestamp", logger)
+    return logAndResponse(400, "Must include a timestamp", logger)
   end
 
   if mailgunTokenCache.include?(token)
-    return response(400, "duplicate token", logger)
+    return logAndResponse(400, "duplicate token", logger)
   end
 
   mailgunTokenCache.push(token)
@@ -97,11 +97,11 @@ post '/mailgun' do
   timestampSeconds = timestamp.to_f
   nowSeconds = Time.now().to_f
   if (timestampSeconds - nowSeconds).abs() > timestampThreshold
-    return response(400, "timestamp unsafe", logger)
+    return logAndResponse(400, "timestamp unsafe", logger)
   end
 
   if not verifyMailgun(ENV['MAILGUN_KEY'], token, timestamp, signature)
-    return response(400, "signature does not verify", logger)
+    return logAndResponse(400, "signature does not verify", logger)
   end
 
   attachmentFiles = []
@@ -141,7 +141,7 @@ post '/mailgun' do
   [200, "OK"]
 end
 
-def response(responseCode, message, logger)
+def logAndResponse(responseCode, message, logger)
   logger.info(message)
   return [responseCode, message]
 end
