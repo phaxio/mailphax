@@ -8,16 +8,7 @@ if not ENV['PHAXIO_KEY'] or not ENV['PHAXIO_SECRET']
 end
 
 get '/' do
-  "Mailfax v1.0 - Visit a mail endpoint: (/sendgrid, /mandrill, /mailgun)"
-end
-
-
-get '/mandrill' do
-  [501, "mandrill not implemented yet"]
-end
-
-post '/mandrill' do
-  [501, "mandrill not implemented yet"]
+  "MailPhax v1.0 - Visit a mail endpoint: (/mailgun)"
 end
 
 get '/mailgun' do
@@ -25,7 +16,6 @@ get '/mailgun' do
 end
 
 post '/mailgun' do
-
   if not params['sender']
     return [400, "Must include a sender"]
   elsif not params['recipient']
@@ -37,11 +27,10 @@ post '/mailgun' do
 
   i = 1
   while i <= attachmentCount do
-    #add the file to the hash
     outputFile = "/tmp/#{Time.now.to_i}-#{rand(200)}-" + params["attachment-#{i}"][:filename]
 
     File.open(outputFile, "w") do |f|
-      f.write(params["attachment-#{i}"][:tempfile].read)
+      f.write(params["attachment-#{i}"][:tempfile].read())
     end
 
     files.push(outputFile)
@@ -49,12 +38,8 @@ post '/mailgun' do
     i += 1
   end
 
-  sendFax(params['sender'], params['recipient'],files)
+  sendFax(params['sender'], params['recipient'], files)
   "OK"
-end
-
-get '/sendgrid' do
-  [501, "sendgrid not implemented yet"]
 end
 
 def sendFax(fromEmail, toEmail, filenames)
@@ -71,14 +56,14 @@ def sendFax(fromEmail, toEmail, filenames)
     options["filename[#{idx}]"] = File.new(filenames[idx])
   end
 
-  logger.info "#{fromEmail} is attempting to send #{filenames.length} files to #{number}..."
+  logger.info("#{fromEmail} is attempting to send #{filenames.length} files to #{number}...")
   result = Phaxio.send_fax(options)
-  result = JSON.parse result.body
+  result = JSON.parse(result.body)
 
   if result['success']
-    logger.info "Fax queued up successfully: ID #" + result['data']['faxId'].to_s
+    logger.info("Fax queued up successfully: ID #" + result['data']['faxId'].to_s)
   else
-    logger.warn "Problem submitting fax: " + result['message']
+    logger.warn("Problem submitting fax: " + result['message'])
 
     if ENV['SMTP_HOST']
       #send mail back to the user telling them there was a problem
