@@ -17,6 +17,28 @@ get '/mailgun' do
   [400, "Mailgun supported, but callbacks must be POSTs"]
 end
 
+$recipientWhitelist = nil
+
+def getRecipientWhitelist()
+  if $recipientWhitelist.nil?
+    if ENV['RECIPIENT_WHITELIST_FILE']
+      $recipientWhitelist = File.read(ENV['RECIPIENT_WHITELIST_FILE']).split
+    end
+  end
+  return $recipientWhitelist
+end
+
+$senderWhitelist = nil
+
+def getSenderWhitelist()
+  if $senderWhitelist.nil?
+    if ENV['SENDER_WHITELIST_FILE']
+      $senderWhitelist = File.read(ENV['SENDER_WHITELIST_FILE']).split
+    end
+  end
+  return $senderWhitelist
+end
+
 def verifyMailgun(apiKey, token, timestamp, signature)
   calculatedSignature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA256.new(), apiKey, [timestamp, token].join())
   signature == calculatedSignature
@@ -33,9 +55,19 @@ post '/mailgun' do
     return response(400, "Must include a sender", logger)
   end
 
+  senderWhitelist = getSenderWhitelist()
+  if not senderWhitelist.nil? and not senderWhitelist.include? sender
+    return response(401, "sender blocked", logger)
+  end
+
   recipient = params['recipient']
   if not recipient
     return response(400, "Must include a recipient", logger)
+  end
+
+  recipientWhitelist = getRecipientWhitelist()
+  if not recipientWhitelist.nil? and not recipientWhitelist.include? recipient
+    return response(401, "recipient blocked", logger)
   end
 
   token = params['token']
