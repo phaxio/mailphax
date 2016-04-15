@@ -7,7 +7,7 @@ require 'openssl'
 require 'to_regexp'
 
 if not ENV['PHAXIO_KEY'] or not ENV['PHAXIO_SECRET'] or not ENV['MAILGUN_KEY']
-  raise "You must specify your phaxio API keys in PHAXIO_KEY and PHAXIO_SECRET"
+  raise "You must specify the required environment variables"
 end
 
 get '/' do
