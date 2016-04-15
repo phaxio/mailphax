@@ -4,6 +4,7 @@ require 'mail'
 require 'pony'
 require 'tempfile'
 require 'openssl'
+require 'to_regexp'
 
 if not ENV['PHAXIO_KEY'] or not ENV['PHAXIO_SECRET'] or not ENV['MAILGUN_KEY']
   raise "You must specify your phaxio API keys in PHAXIO_KEY and PHAXIO_SECRET"
@@ -37,6 +38,17 @@ def getSenderWhitelist()
     end
   end
   return $senderWhitelist
+end
+
+$bodyRegex = nil
+
+def getBodyRegex()
+  if $bodyRegex.nil?
+    if ENV['BODY_REGEX']
+      $bodyRegex = ENV['BODY_REGEX'].to_regexp
+    end
+  end
+  return $bodyRegex
 end
 
 def verifyMailgun(apiKey, token, timestamp, signature)
@@ -120,12 +132,17 @@ post '/mailgun' do
   end
 
   if params['body-plain']
-    tFile = Tempfile.new('email-body')
     data = params['body-plain']
-    tFile.write(data)
-    tFile.close()
+    bodyRegex = getBodyRegex()
+    if bodyRegex.nil? or bodyRegex.match(data)
+      tFile = Tempfile.new('email-body')
+      tFile.write(data)
+      tFile.close()
 
-    attachmentFiles.push(tFile)
+      attachmentFiles.push(tFile)
+    else
+      return logAndResponse(401, "body not accepted", logger)
+    end
   end
 
   sendFax(sender, recipient, attachmentFiles)
