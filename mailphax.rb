@@ -73,8 +73,8 @@ post '/mailgun' do
   end
 
   attachmentFiles = []
-  attachmentCount = params['attachment-count'].to_i
 
+  attachmentCount = params['attachment-count'].to_i
   i = 1
   while i <= attachmentCount do
     tFile = Tempfile.new(params["attachment-#{i}"][:filename])
@@ -85,6 +85,15 @@ post '/mailgun' do
     attachmentFiles.push(tFile)
 
     i += 1
+  end
+
+  if params['body-plain']
+    tFile = Tempfile.new('email-body')
+    data = params['body-plain']
+    tFile.write(data)
+    tFile.close()
+
+    attachmentFiles.push(tFile)
   end
 
   sendFax(sender, recipient, attachmentFiles)
