@@ -126,6 +126,7 @@ post '/mailgun' do
     tFile.write(data)
     tFile.close()
 
+    # use the whole file to ensure GC cannot release it yet
     attachmentFiles.push(tFile)
 
     i += 1
@@ -139,6 +140,7 @@ post '/mailgun' do
       tFile.write(data)
       tFile.close()
 
+      # use the whole file to ensure GC cannot release it yet
       attachmentFiles.push(tFile)
     else
       return logAndResponse(401, "body not accepted", logger)
@@ -174,7 +176,7 @@ def sendFax(fromEmail, toEmail, attachmentFiles)
   options = {to: number, callback_url: "mailto:#{fromEmail}" }
 
   attachmentFiles.each_index do |idx|
-    options["filename[#{idx}]"] = attachmentFiles[idx].path
+    options["filename[#{idx}]"] = File.new(attachmentFiles[idx].path)
   end
 
   logger.info("#{fromEmail} is attempting to send #{attachmentFiles.length} files to #{number}...")
