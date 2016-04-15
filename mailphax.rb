@@ -121,7 +121,7 @@ post '/mailgun' do
   attachmentCount = params['attachment-count'].to_i
   i = 1
   while i <= attachmentCount do
-    tFile = Tempfile.new(params["attachment-#{i}"][:filename])
+    tFile = Tempfile.new(['', params["attachment-#{i}"][:filename]])
     data = params["attachment-#{i}"][:tempfile].read()
     tFile.write(data)
     tFile.close()
@@ -136,7 +136,7 @@ post '/mailgun' do
     data = params['body-plain']
     bodyRegex = getBodyRegex()
     if bodyRegex.nil? or bodyRegex.match(data)
-      tFile = Tempfile.new('email-body')
+      tFile = Tempfile.new(['', 'email-body.txt'])
       tFile.write(data)
       tFile.close()
 
