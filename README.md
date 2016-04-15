@@ -36,30 +36,3 @@ Configuring Mailgun
 1. For "Actions" specify "forward("http://yourMailPhaxInstallation/mailgun")" where yourMailPhaxInstallation should be the location where you've installed the sinatra app.
 1. Click "Save".
 1. Profit.
-
-
-Configuring Mandrill
---------------------
-
-1. Sign up for a mandrill account
-1. In the Mandrill console, click "Inbound" in the left sidebar.
-1. Add a new inbound domain that you have DNS control over.
-1. Modify the DNS on your inbound domain to point to Mandrill using MX records. (Click the "DNS Settings" button for more info.)
-1. Click "Routes" in the Mandrill console under your new inbound domain.
-1. Add a wildcard route "*" and point it to http://yourMailPhaxInstallation/mandrill (e.g. http://example.com/mandrill)
-1. Profit.
-
-
-Configuring SendGrid
--------
-TODO
-
-
-TODOs
------
-
- - Support SendGrid
- - Reply to user with confirmation of fax success/failure
- - Reply to user if fax submission failed (e.g. bad number, no attachment)
- - Allow filtering inbound emails by regexes
- 
