@@ -2,8 +2,10 @@ require 'sinatra'
 require 'phaxio'
 require 'mail'
 require 'pony'
+require 'tempfile'
+require 'openssl'
 
-if not ENV['PHAXIO_KEY'] or not ENV['PHAXIO_SECRET']
+if not ENV['PHAXIO_KEY'] or not ENV['PHAXIO_SECRET'] or not ENV['MAILGUN_KEY']
   raise "You must specify your phaxio API keys in PHAXIO_KEY and PHAXIO_SECRET"
 end
 
@@ -15,34 +17,95 @@ get '/mailgun' do
   [400, "Mailgun supported, but callbacks must be POSTs"]
 end
 
+def verifyMailgun(apiKey, token, timestamp, signature)
+  calculatedSignature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest::SHA256.new(), apiKey, [timestamp, token].join())
+  signature == calculatedSignature
+end
+
+mailgunTokenCache = []
+
 post '/mailgun' do
-  if not params['sender']
-    return [400, "Must include a sender"]
-  elsif not params['recipient']
-    return [400, "Must include a recipient"]
+  mailgunTokenCacheMaxLength = 50
+  timestampThreshold = 30.0
+
+  sender = params['sender']
+  if not sender
+    return response(400, "Must include a sender", logger)
   end
 
-  files = []
+  recipient = params['recipient']
+  if not recipient
+    return response(400, "Must include a recipient", logger)
+  end
+
+  token = params['token']
+  if not token
+    return response(400, "Must include a token", logger)
+  end
+
+  signature = params['signature']
+  if not signature
+    return response(400, "Must include a signature", logger)
+  end
+
+  timestamp = params['timestamp']
+  if not timestamp
+    return response(400, "Must include a timestamp", logger)
+  end
+
+  if mailgunTokenCache.include?(token)
+    return response(400, "duplicate token", logger)
+  end
+
+  mailgunTokenCache.push(token)
+  while mailgunTokenCache.length() > mailgunTokenCacheMaxLength
+    mailgunTokenCache.pop()
+  end
+
+  timestampSeconds = timestamp.to_f
+  nowSeconds = Time.now().to_f
+  if (timestampSeconds - nowSeconds).abs() > timestampThreshold
+    return response(400, "timestamp unsafe", logger)
+  end
+
+  if not verifyMailgun(ENV['MAILGUN_KEY'], token, timestamp, signature)
+    return response(400, "signature does not verify", logger)
+  end
+
+  attachmentFiles = []
   attachmentCount = params['attachment-count'].to_i
 
   i = 1
   while i <= attachmentCount do
-    outputFile = "/tmp/#{Time.now.to_i}-#{rand(200)}-" + params["attachment-#{i}"][:filename]
+    tFile = Tempfile.new(params["attachment-#{i}"][:filename])
+    data = params["attachment-#{i}"][:tempfile].read()
+    tFile.write(data)
+    tFile.close()
 
-    File.open(outputFile, "w") do |f|
-      f.write(params["attachment-#{i}"][:tempfile].read())
-    end
-
-    files.push(outputFile)
+    attachmentFiles.push(tFile)
 
     i += 1
   end
 
-  sendFax(params['sender'], params['recipient'], files)
-  "OK"
+  sendFax(sender, recipient, attachmentFiles)
+
+  attachmentFiles.each do |attachmentFile|
+    begin
+      attachmentFile.unlink()
+    rescue
+      # do nothing
+    end
+  end
+
+  [200, "OK"]
 end
 
-def sendFax(fromEmail, toEmail, filenames)
+def response(responseCode, message, logger)
+  logger.info(message)
+  return [responseCode, message]
+end
+
+def sendFax(fromEmail, toEmail, attachmentFiles)
   Phaxio.config do |config|
     config.api_key = ENV["PHAXIO_KEY"]
     config.api_secret = ENV["PHAXIO_SECRET"]
@@ -52,11 +115,11 @@ def sendFax(fromEmail, toEmail, filenames)
 
   options = {to: number, callback_url: "mailto:#{fromEmail}" }
 
-  filenames.each_index do |idx|
-    options["filename[#{idx}]"] = File.new(filenames[idx])
+  attachmentFiles.each_index do |idx|
+    options["filename[#{idx}]"] = attachmentFiles[idx].path
   end
 
-  logger.info("#{fromEmail} is attempting to send #{filenames.length} files to #{number}...")
+  logger.info("#{fromEmail} is attempting to send #{attachmentFiles.length} files to #{number}...")
   result = Phaxio.send_fax(options)
   result = JSON.parse(result.body)
 
@@ -72,7 +135,7 @@ def sendFax(fromEmail, toEmail, filenames)
         :to => fromEmail,
         :from => (ENV['SMTP_FROM'] || 'mailphax@example.com'),
         :subject => 'Mailfax: There was a problem sending your fax',
-        :body => "There was a problem faxing your #{filenames.length} files to #{number}: " + result['message'],
+        :body => "There was a problem faxing your #{attachmentFiles.length} files to #{number}: " + result['message'],
         :via => :smtp,
         :via_options => {
           :address                => ENV['SMTP_HOST'],
