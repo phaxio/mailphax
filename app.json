@@ -17,6 +17,21 @@
     "PHAXIO_SECRET": {
       "description": "Your Phaxio API Secret"
     },
+    "MAILGUN_KEY": {
+      "description": "Your Mailgun API Key"
+    },
+    "RECIPIENT_WHITELIST_FILE": {
+      "description": "File path to newline-separated list of whitelisted emails of recipients",
+      "required": false
+    },
+    "SENDER_WHITELIST_FILE": {
+      "description": "File path to newline-separated list of whitelisted emails of senders",
+      "required": false
+    },
+    "BODY_REGEX": {
+      "description": "Ruby Regexp string (of form '/{regex string}/{regex arguments}') to match against email body",
+      "required": false
+    },
     "SMTP_HOST": {
       "description": "SMTP host for outgoing email (for failure alerts)",
       "required": false
