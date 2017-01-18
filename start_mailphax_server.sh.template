@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export PHAXIO_KEY='##PHAXIO API KEY##'
+export PHAXIO_SECRET='##PHAXIO SECRET KEY##'
+export MAILGUN_KEY='##MAILGUN API KEY##'
+
+# see app.json for more available environment variables
+
+cd /path/to/mailphax/git/repo/
+ruby mailphax.rb
