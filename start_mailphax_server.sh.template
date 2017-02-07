@@ -1,0 +1,16 @@
+#!/bin/bash
+
+source /usr/local/rvm/scripts/rvm
+
+PORT=8080
+HOST='0.0.0.0'
+ENVIRONMENT='production'
+
+export PHAXIO_KEY='##PHAXIO API KEY##'
+export PHAXIO_SECRET='##PHAXIO SECRET KEY##'
+export MAILGUN_KEY='##MAILGUN API KEY##'
+
+# see app.json for more available environment variables
+
+cd /path/to/mailphax/git/repo/
+rackup -p $PORT -o $HOST -E $ENVIRONMENT
